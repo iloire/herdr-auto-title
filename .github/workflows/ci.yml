@@ -30,6 +30,9 @@ jobs:
       - run: go vet ./...
       - run: go build ./...
       - run: go test -race ./...
+      # Every release target, as the release job builds them, so one that
+      # stopped building shows up here rather than on the day of a release.
+      - run: make dist
 
   lint:
     name: Lint
