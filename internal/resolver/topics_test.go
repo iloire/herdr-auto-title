@@ -95,8 +95,8 @@ func TestATopicIsBoundOnlyWhenABoundIsSet(t *testing.T) {
 		want   string
 	}{
 		{maxLen: 0, want: "claude › " + activity},
-		{maxLen: 20, want: "claude › Reconcile t"},
-		{maxLen: 8, want: "claude"},
+		{maxLen: 20, want: "claude › Reconcile…"},
+		{maxLen: 8, want: "claude…"},
 	} {
 		bounded := NewTopics(Options{BranchMax: DefaultBranchMaxLength}, test.maxLen)
 		if got := bounded.Topic(pane); got != test.want {

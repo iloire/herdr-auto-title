@@ -422,7 +422,7 @@ func TestATopicIsBoundOnlyWhenAWidthIsSet(t *testing.T) {
 		want  string
 	}{
 		{width: 0, want: title},
-		{width: 10, want: "Reconcile"},
+		{width: 10, want: "Reconcile…"},
 	} {
 		t.Run(strconv.Itoa(test.width), func(t *testing.T) {
 			t.Parallel()

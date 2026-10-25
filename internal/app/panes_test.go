@@ -280,8 +280,8 @@ func TestTheSettingsThatShapeATitleShapeAPaneLabel(t *testing.T) {
 		{
 			"the length limit binds a pane too",
 			func(c *Config) { c.MaxLength = 6 },
-			"billin",
-			"dashbo",
+			"billi…",
+			"dashb…",
 		},
 		{
 			"the position leads the tab and not the pane",

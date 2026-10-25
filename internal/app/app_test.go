@@ -1585,7 +1585,7 @@ func TestALongTopicAndAWorktreeBranchFitTheDefaultBounds(t *testing.T) {
 	h.poll()
 
 	got := h.client.Renames()[0].Label
-	want := filepath.Base(repo) + " › feat/oauth › claude › Make the branch follow"
+	want := filepath.Base(repo) + " › feat/oauth › claude › Make the branch…"
 
 	if got != want {
 		t.Errorf("rename = %q, want %q", got, want)

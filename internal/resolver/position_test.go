@@ -85,7 +85,7 @@ func TestAPositionWithNoRoomIsDropped(t *testing.T) {
 	t.Parallel()
 
 	got := numberedCWD(3).Resolve(atPosition(10, dashboard))
-	if got.Name != "das" {
+	if got.Name != "da…" {
 		t.Errorf("name = %q, want the bare title", got.Name)
 	}
 }
@@ -140,7 +140,7 @@ func TestANumberedTitleLeavesNoDanglingSeparator(t *testing.T) {
 	inner := fixedResolver{decision: Decision{Name: "dashboard › nvim"}}
 
 	got := NewNumbered(inner, 16).Resolve(atPosition(1, dashboard))
-	if got.Name != "1 · dashboard" {
-		t.Errorf("name = %q, want %q", got.Name, "1 · dashboard")
+	if got.Name != "1 · dashboard…" {
+		t.Errorf("name = %q, want %q", got.Name, "1 · dashboard…")
 	}
 }

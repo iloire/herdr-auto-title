@@ -33,15 +33,15 @@ func TestSanitize(t *testing.T) {
 		{"whitespace only yields empty output", "   \n\t ", 64, ""},
 		{"escape only yields empty output", "\x1b[0m", 64, ""},
 		{"value at the limit is kept whole", "abcdefghij", 10, "abcdefghij"},
-		{"value over the limit is truncated", "abcdefghijk", 10, "abcdefghij"},
-		{"truncation leaves no dangling separator", "abcdefg › hij", 9, "abcdefg"},
+		{"value over the limit is truncated", "abcdefghijk", 10, "abcdefghi…"},
+		{"truncation leaves no dangling separator", "abcdefg › hij", 9, "abcdefg…"},
 		// Non-ASCII on purpose: cutting these two-byte characters by byte
 		// count would corrupt the result. They are one column each, so the
 		// limit still reaches eight of them.
-		{"truncation counts columns not bytes", "проектная-работа", 8, "проектна"},
+		{"truncation counts columns not bytes", "проектная-работа", 8, "проектн…"},
 		// A limit on a title is a limit on the room it takes in the tab bar.
-		{"a double-width character costs two columns", "設定ファイル", 6, "設定フ"},
-		{"an odd limit leaves a wide character out", "設定ファイル", 5, "設定"},
+		{"a double-width character costs two columns", "設定ファイル", 6, "設定…"},
+		{"an odd limit leaves a wide character out", "設定ファイル", 5, "設定…"},
 		{"nothing is cut when the whole value fits", "設定ファイル", 64, "設定ファイル"},
 	}
 
@@ -179,9 +179,36 @@ func TestTruncationNeverCutsAGraphemeClusterOpen(t *testing.T) {
 			"a cluster that does not fit is dropped whole",
 			"work \U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466",
 			6,
-			"work",
+			"work…",
 		},
-		{"a skin tone stays with its emoji", "review \U0001F44D\U0001F3FD ok", 8, "review"},
+		{"a skin tone stays with its emoji", "review \U0001F44D\U0001F3FD ok", 8, "review…"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := Sanitize(tc.in, tc.maxWidth); got != tc.want {
+				t.Errorf("Sanitize(%q, %d) = %q, want %q", tc.in, tc.maxWidth, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestATitleIsCutAtAWord(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		in       string
+		maxWidth int
+		want     string
+	}{
+		{"a word cut in half is dropped", "Sospecha en venta de teclados Wallapop", 36, "Sospecha en venta de teclados…"},
+		{"a word ending at the bound is kept", "Investments PL and real-estate Nordics", 31, "Investments PL and real-estate…"},
+		{"a word in the front half is cut instead", "ab supercalifragilisticexpialidocious", 12, "ab supercal…"},
+		{"a separator left at the cut goes", "dashboard › claude › Reconcile", 20, "dashboard › claude…"},
+		{"one column has no room for the ellipsis", "dashboard", 1, "d"},
 	}
 
 	for _, tc := range tests {
@@ -199,7 +226,7 @@ func TestFormatTruncatesAssembledTitle(t *testing.T) {
 	t.Parallel()
 
 	got := Format(Parts{Context: "dashboard", Activity: "OAuth scopes"}, 12)
-	if got != "dashboard" {
-		t.Errorf("Format truncated to %q, want %q", got, "dashboard")
+	if got != "dashboard…" {
+		t.Errorf("Format truncated to %q, want %q", got, "dashboard…")
 	}
 }

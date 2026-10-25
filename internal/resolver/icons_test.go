@@ -88,7 +88,7 @@ func TestIconCountsAgainstTheLength(t *testing.T) {
 
 	r := NewIconedTitles(New(Options{MaxLength: maxLength}, NewCWD("")), maxLength)
 
-	want := iconShell + " dash"
+	want := iconShell + " das…"
 	if got := r.Resolve(tabWithCWD(dashboard)); got.Name != want {
 		t.Errorf("name = %q, want %q", got.Name, want)
 	}

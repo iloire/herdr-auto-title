@@ -87,7 +87,12 @@ func Sanitize(s string, maxLen int) string {
 	return truncate(s, maxLen)
 }
 
-// truncate cuts to maxWidth columns and leaves no dangling separator behind.
+// ellipsis ends a title that was cut, so a shortened word is not read as a
+// whole one ("Wallapo" for "Wallapop").
+const ellipsis = "…"
+
+// truncate cuts to maxWidth columns, at the last word that fits when one ends
+// in the back half, and marks the cut with an ellipsis. No dangling separator.
 func truncate(s string, maxWidth int) string {
 	if maxWidth <= 0 {
 		return s
@@ -98,16 +103,43 @@ func truncate(s string, maxWidth int) string {
 		return s
 	}
 
-	cut := strings.TrimRight(head, trimmable)
+	// One column cannot hold a character and the ellipsis both.
+	if maxWidth < 2 {
+		return cut(s, maxWidth)
+	}
 
-	return strings.TrimSpace(cut)
+	head, rest = splitAtWidth(s, maxWidth-1)
+	if !strings.HasPrefix(rest, " ") {
+		if i := strings.LastIndexByte(head, ' '); i > 0 && uniseg.StringWidth(head[:i]) >= (maxWidth-1)/2 {
+			head = head[:i]
+		}
+	}
+
+	short := strings.TrimSpace(strings.TrimRight(head, trimmable))
+	if short == "" {
+		return ""
+	}
+
+	return short + ellipsis
 }
 
-// truncateToGrapheme is truncate that never empties s: a bound narrower than
+// cut is truncate for a part of a title, such as a directory bound to a few
+// columns: no ellipsis to spend them on, and nothing kept past the bound.
+func cut(s string, maxWidth int) string {
+	head, _ := splitAtWidth(s, maxWidth)
+
+	return strings.TrimSpace(strings.TrimRight(head, trimmable))
+}
+
+// truncateToGrapheme is cut that never empties s: a bound narrower than
 // its first grapheme, a wide character under a bound of one, keeps that grapheme.
 func truncateToGrapheme(s string, maxWidth int) string {
-	if cut := truncate(s, maxWidth); cut != "" {
-		return cut
+	if maxWidth <= 0 || uniseg.StringWidth(s) <= maxWidth {
+		return s
+	}
+
+	if short := cut(s, maxWidth); short != "" {
+		return short
 	}
 
 	first, _, _, _ := uniseg.FirstGraphemeClusterInString(s, -1)

@@ -34,7 +34,7 @@ subprocess at all — there is no `sh -c` anywhere to pass anything to.
 5. collapses runs of the separator and normalizes the spacing around it, so a
    value that already contains `›` cannot forge extra structure;
 6. trims leading and trailing separators and whitespace;
-7. truncates to the limit.
+7. truncates to the limit, at a word, and ends the cut with an ellipsis.
 
 `Sanitize` is idempotent: running it on its own output changes nothing.
 
@@ -159,4 +159,13 @@ did not change when this did.
 
 Truncation also leaves no dangling separator behind: a title cut mid-structure
 says a part was lost without saying which, so `abcdefg › hij` cut at nine
-columns is `abcdefg`, not `abcdefg ›`.
+columns is `abcdefg…`, not `abcdefg ›`.
+
+A cut title ends on `…`, which takes one of its columns, so a word cut short
+is not read as a whole one: `Wallapo` reads as a word, `Wallapo…` does not.
+When the last space before the cut sits in the back half of the title, the cut
+moves back to it and the partial word goes; nearer the front, keeping the
+characters is worth more than ending on a word. A part bounded on its own, the
+directory under `HERDR_AUTO_TITLE_DIRECTORY_MAX`, is cut hard with no
+ellipsis: at a few columns the ellipsis would cost a third of what is left,
+and the cut part is compared with the workspace name.
