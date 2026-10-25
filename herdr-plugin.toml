@@ -36,3 +36,15 @@ title = "Auto Title: restart"
 description = "Start a fresh Auto Title in place of the running one"
 contexts = ["global"]
 command = ["./herdr-auto-title", "restart"]
+
+# Every new tab checks an instance is running and starts one if it stopped,
+# since Herdr only runs the startup hook when its server starts.
+[[events]]
+on = "tab.created"
+platforms = ["linux", "macos"]
+command = ["./herdr-auto-title", "ensure"]
+
+[[events]]
+on = "tab.created"
+platforms = ["windows"]
+command = ["./herdr-auto-title.exe", "ensure"]

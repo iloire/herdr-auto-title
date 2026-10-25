@@ -1,6 +1,7 @@
 // Command herdr-auto-title is the Herdr Auto Title plugin process: started once,
 // it stays alive and keeps every tab's title in step with what that tab is
-// doing. `herdr-auto-title restart` starts a fresh one in its place.
+// doing. `herdr-auto-title restart` starts a fresh one in its place, and
+// `herdr-auto-title ensure` starts one only when none is running.
 package main
 
 import (
@@ -25,8 +26,10 @@ func main() {
 		err = run()
 	case len(os.Args) == 2 && os.Args[1] == "restart":
 		err = restart()
+	case len(os.Args) == 2 && os.Args[1] == "ensure":
+		err = ensure()
 	default:
-		err = errors.New("usage: herdr-auto-title [restart]")
+		err = errors.New("usage: herdr-auto-title [restart|ensure]")
 	}
 
 	if err != nil {
@@ -139,4 +142,19 @@ func restart() error {
 	log.Info(title, "pid", pid)
 
 	return nil
+}
+
+// ensure brings back an instance that stopped mid-session: Herdr starts one only
+// when its server starts, so until then every new tab would keep its number.
+func ensure() error {
+	client, err := herdr.New()
+	if err != nil {
+		return err
+	}
+
+	if instance.Running(instance.File(app.StateDir(), client.Path())) != 0 {
+		return nil
+	}
+
+	return restart()
 }

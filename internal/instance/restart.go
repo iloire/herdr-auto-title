@@ -120,3 +120,9 @@ func start(exe string) (*os.Process, error) {
 		Sys:   detached(),
 	})
 }
+
+// Running is the pid of the live instance holding the claim at path, or 0 when
+// none does: what `ensure` asks before it starts one.
+func Running(path string) int {
+	return holder(path)
+}

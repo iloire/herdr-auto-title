@@ -140,3 +140,20 @@ func TestRestartRespectsItsContext(t *testing.T) {
 		end(t, newer)
 	}
 }
+
+//nolint:paralleltest // the instance started inherits the environment
+func TestRunningNamesTheLiveInstanceAndNobodyOnceItExits(t *testing.T) {
+	path := claimFile(t)
+
+	if pid := Running(path); pid != 0 {
+		t.Fatalf("Running = %d with no claim, want 0", pid)
+	}
+
+	pid := instance(t, "stay", path)
+	eventually(t, "the instance's claim", func() bool { return Running(path) == pid })
+	end(t, pid)
+
+	if got := Running(path); got != 0 {
+		t.Errorf("Running = %d after the instance exited, want 0", got)
+	}
+}
